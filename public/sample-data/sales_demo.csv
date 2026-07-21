@@ -1,0 +1,13 @@
+date,region,category,revenue,units
+2026-01-05,Northeast,Electronics,18400,92
+2026-01-12,South,Home,12750,115
+2026-01-19,West,Electronics,22100,104
+2026-02-03,Midwest,Office,9100,140
+2026-02-15,Northeast,Home,15600,128
+2026-03-01,South,Electronics,19750,88
+2026-03-17,West,Office,11800,172
+2026-04-08,Midwest,Home,14350,121
+2026-04-20,Northeast,Office,13400,184
+2026-05-11,South,Home,16250,133
+2026-05-27,West,Electronics,24600,109
+2026-06-09,Midwest,Office,10500,156

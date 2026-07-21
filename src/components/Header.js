@@ -22,10 +22,37 @@ export function Header() {
           <span>Import Data</span>
         </button>
 
-        <button class="btn btn-secondary" id="loadDemoBtn">
-          <i class="ti ti-database-plus"></i>
-          <span>Load Demo</span>
-        </button>
+        <div class="demo-menu-wrap">
+          <button class="btn btn-secondary" id="loadDemoBtn" aria-haspopup="menu" aria-expanded="false">
+            <i class="ti ti-database-plus"></i>
+            <span>Load Demo</span>
+            <i class="ti ti-chevron-down"></i>
+          </button>
+
+          <div class="demo-menu" id="demoMenu" role="menu" hidden>
+            <button role="menuitem" data-demo="sales">
+              <i class="ti ti-chart-line"></i>
+              <span>
+                <strong>Sales Analytics</strong>
+                <small>Revenue and category performance</small>
+              </span>
+            </button>
+            <button role="menuitem" data-demo="manufacturing">
+              <i class="ti ti-building-factory-2"></i>
+              <span>
+                <strong>Manufacturing KPIs</strong>
+                <small>OEE, downtime, and scrap</small>
+              </span>
+            </button>
+            <button role="menuitem" data-demo="supply-chain">
+              <i class="ti ti-truck-delivery"></i>
+              <span>
+                <strong>Supply Chain</strong>
+                <small>Supplier quality and delivery</small>
+              </span>
+            </button>
+          </div>
+        </div>
 
         <button class="btn btn-ghost" id="newQueryBtn">
           <i class="ti ti-file-plus"></i>

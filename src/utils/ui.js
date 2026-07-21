@@ -9,6 +9,11 @@ import { executeQuery } from "../services/queryService.js";
 import { importDataset } from "../services/uploadService.js";
 import { loadSampleCsv } from "../services/sampleDataService.js";
 import {
+  DEMO_DATASETS,
+  fetchDemoDataset,
+  getDemoDataset
+} from "../services/demoDataService.js";
+import {
   createSqlEditor,
   getEditorValue,
   setEditorValue,
@@ -148,10 +153,7 @@ function bindControls() {
     fileInput.value = "";
   });
 
-  document.querySelector("#loadDemoBtn")?.addEventListener("click", async () => {
-    await ensureSampleTable();
-    setQueryStatus("Demo dataset loaded.");
-  });
+  bindDemoMenu();
 
   ["#runQueryBtn", "#workspaceRunBtn"].forEach((selector) => {
     document.querySelector(selector)?.addEventListener("click", runCurrentQuery);
@@ -202,6 +204,77 @@ function bindControls() {
   });
 }
 
+
+function bindDemoMenu() {
+  const button = document.querySelector("#loadDemoBtn");
+  const menu = document.querySelector("#demoMenu");
+
+  button?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const nextHidden = !menu.hidden;
+    menu.hidden = nextHidden;
+    button.setAttribute("aria-expanded", String(!nextHidden));
+  });
+
+  menu?.querySelectorAll("[data-demo]").forEach((item) => {
+    item.addEventListener("click", async () => {
+      menu.hidden = true;
+      button.setAttribute("aria-expanded", "false");
+      await loadDemoDataset(item.dataset.demo);
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".demo-menu-wrap")) {
+      menu.hidden = true;
+      button?.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+async function loadDemoDataset(id) {
+  const dataset = getDemoDataset(id);
+  if (!dataset) return;
+
+  showLoading(`Loading ${dataset.name}`, dataset.description);
+
+  try {
+    const csvText = await fetchDemoDataset(dataset);
+    await registerSampleCsv(csvText, dataset.tableName);
+    const rows = await countRows(dataset.tableName);
+
+    appState.tables.set(dataset.tableName, {
+      name: dataset.tableName,
+      filename: dataset.file.split("/").pop(),
+      type: "CSV",
+      size: new Blob([csvText]).size,
+      rows
+    });
+
+    appState.activeTable = dataset.tableName;
+    renderTables();
+    await renderSchema(dataset.tableName);
+
+    setEditorValue(dataset.defaultQuery);
+    updateActiveQueryFromEditor();
+
+    setQueryStatus(`${dataset.name} loaded.`);
+    showToast(
+      `${dataset.name} loaded`,
+      `${rows.toLocaleString()} rows are ready to query.`,
+      "success"
+    );
+
+    await runCurrentQuery();
+  } catch (error) {
+    console.error(error);
+    showToast("Demo load failed", error.message, "error");
+    setQueryStatus(error.message);
+  } finally {
+    hideLoading();
+  }
+}
+
 async function handleFiles(fileList) {
   const files = [...fileList];
   const existingNames = new Set(appState.tables.keys());
@@ -223,9 +296,11 @@ async function handleFiles(fileList) {
       updateActiveQueryFromEditor();
 
       setQueryStatus(`${file.name} imported as ${table.name}.`);
+      showToast("Dataset imported", `${file.name} is ready as ${table.name}.`, "success");
     } catch (error) {
       console.error(error);
       setQueryStatus(`Import failed: ${error.message}`);
+      showToast("Import failed", error.message, "error");
     }
   }
 
@@ -256,6 +331,12 @@ async function runCurrentQuery() {
     updateQueryMetrics(result.rows.length, result.elapsedMs);
     setResultStatus("Query completed", "success");
     setQueryStatus("Query completed successfully.");
+    showToast(
+      "Query completed",
+      `${result.rows.length.toLocaleString()} rows in ${result.elapsedMs.toFixed(1)} ms.`,
+      "success",
+      2200
+    );
 
     document.querySelector("#downloadResultsBtn").disabled = result.rows.length === 0;
 
@@ -271,6 +352,7 @@ async function runCurrentQuery() {
     console.error(error);
     setResultStatus("Query failed", "error");
     setQueryStatus(error.message);
+    showToast("Query failed", error.message, "error");
     clearGrid();
     clearChart();
     renderStatistics([], []);
@@ -697,6 +779,57 @@ function formatStatistic(value) {
     );
   }
   return escapeHtml(String(value));
+}
+
+
+function showToast(title, message, type = "info", duration = 3600) {
+  const region = document.querySelector("#toastRegion");
+  if (!region) return;
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">
+      <i class="ti ${
+        type === "success"
+          ? "ti-circle-check-filled"
+          : type === "error"
+            ? "ti-alert-triangle-filled"
+            : "ti-info-circle-filled"
+      }"></i>
+    </span>
+    <span class="toast-copy">
+      <strong>${escapeHtml(title)}</strong>
+      <small>${escapeHtml(message)}</small>
+    </span>
+    <button class="toast-close" aria-label="Dismiss notification">×</button>
+  `;
+
+  const remove = () => {
+    toast.classList.add("leaving");
+    setTimeout(() => toast.remove(), 180);
+  };
+
+  toast.querySelector(".toast-close")?.addEventListener("click", remove);
+  region.appendChild(toast);
+
+  if (duration > 0) {
+    setTimeout(remove, duration);
+  }
+}
+
+function showLoading(title, message) {
+  const overlay = document.querySelector("#loadingOverlay");
+  if (!overlay) return;
+
+  document.querySelector("#loadingTitle").textContent = title;
+  document.querySelector("#loadingMessage").textContent = message;
+  overlay.hidden = false;
+}
+
+function hideLoading() {
+  const overlay = document.querySelector("#loadingOverlay");
+  if (overlay) overlay.hidden = true;
 }
 
 function setEngineStatus(message, state = "ready") {

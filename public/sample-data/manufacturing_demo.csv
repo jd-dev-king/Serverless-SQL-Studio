@@ -1,0 +1,11 @@
+date,line,shift,units_produced,scrap_units,downtime_minutes,oee_percent
+2026-06-01,Line A,Day,1240,34,48,82.4
+2026-06-01,Line B,Night,1185,41,61,78.9
+2026-06-02,Line A,Day,1310,29,36,85.7
+2026-06-02,Line B,Night,1215,38,52,80.6
+2026-06-03,Line A,Day,1288,31,44,83.9
+2026-06-03,Line B,Night,1160,49,70,76.8
+2026-06-04,Line A,Day,1365,26,28,88.2
+2026-06-04,Line B,Night,1255,36,46,82.1
+2026-06-05,Line A,Day,1332,27,31,87.4
+2026-06-05,Line B,Night,1228,35,49,81.7
