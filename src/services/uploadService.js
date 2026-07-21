@@ -7,6 +7,8 @@ import {
 export async function importDataset(file, existingNames = new Set()) {
   const extension = getExtension(file.name);
 
+  validateFileSize(file, extension);
+
   if (!["csv", "parquet"].includes(extension)) {
     throw new Error("Only CSV and Parquet files are supported.");
   }
@@ -56,4 +58,19 @@ function createUniqueTableName(filename, existingNames) {
   }
 
   return candidate;
+}
+
+
+function validateFileSize(file, extension) {
+  const maxCsvBytes = 500 * 1024 * 1024;
+  const maxParquetBytes = 1024 * 1024 * 1024;
+
+  const limit = extension === "parquet" ? maxParquetBytes : maxCsvBytes;
+
+  if (file.size > limit) {
+    const limitMb = Math.round(limit / 1024 / 1024);
+    throw new Error(
+      `${file.name} exceeds the recommended ${limitMb} MB browser limit.`
+    );
+  }
 }

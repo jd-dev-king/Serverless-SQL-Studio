@@ -5,6 +5,7 @@ import { ResultsPanel } from "./components/ResultsPanel.js";
 import { StatusBar } from "./components/StatusBar.js";
 import { Notifications } from "./components/Notifications.js";
 import { HelpCenter } from "./components/HelpCenter.js";
+import { AboutPanel } from "./components/AboutPanel.js";
 import { initializeApp } from "./utils/ui.js";
 
 export function App() {
@@ -23,6 +24,7 @@ export function App() {
       ${StatusBar()}
       ${Notifications()}
       ${HelpCenter()}
+      ${AboutPanel()}
     </div>
   `;
 }

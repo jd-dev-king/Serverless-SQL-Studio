@@ -19,6 +19,11 @@ import {
   resetOnboarding
 } from "../services/onboardingService.js";
 import {
+  collectDiagnostics,
+  getCompatibilityWarnings,
+  formatDiagnosticValue
+} from "../services/diagnosticsService.js";
+import {
   createSqlEditor,
   getEditorValue,
   setEditorValue,
@@ -180,6 +185,7 @@ function bindControls() {
   document.querySelector("#newQueryBtn")?.addEventListener("click", createNewQuery);
   document.querySelector("#resetWorkspaceBtn")?.addEventListener("click", resetWorkspace);
   document.querySelector("#helpBtn")?.addEventListener("click", () => openModal("#helpModal"));
+  document.querySelector("#aboutBtn")?.addEventListener("click", openAboutModal);
   window.addEventListener("save-query", saveActiveQuery);
 
   document.querySelector("#gridSearchInput")?.addEventListener("input", (event) => {
@@ -219,6 +225,8 @@ function bindControls() {
 
 function bindHelpAndOnboarding() {
   document.querySelector("#closeHelpBtn")?.addEventListener("click", () => closeModal("#helpModal"));
+  document.querySelector("#closeAboutBtn")?.addEventListener("click", () => closeModal("#aboutModal"));
+  document.querySelector("#copyDiagnosticsBtn")?.addEventListener("click", copyDiagnostics);
   document.querySelector("#skipOnboardingBtn")?.addEventListener("click", () => {
     completeOnboarding();
     closeModal("#onboardingModal");
@@ -255,6 +263,57 @@ function openModal(selector) {
 function closeModal(selector) {
   const modal = document.querySelector(selector);
   if (modal) modal.hidden = true;
+}
+
+
+function openAboutModal() {
+  renderDiagnostics();
+  openModal("#aboutModal");
+}
+
+function renderDiagnostics() {
+  const diagnostics = collectDiagnostics();
+  const warnings = getCompatibilityWarnings(diagnostics);
+  const container = document.querySelector("#diagnosticsContent");
+  const warningContainer = document.querySelector("#diagnosticsWarnings");
+
+  const rows = [
+    ["Mode", diagnostics.mode],
+    ["Base URL", diagnostics.baseUrl],
+    ["Online", diagnostics.online],
+    ["WebAssembly", diagnostics.wasmSupported],
+    ["Web Workers", diagnostics.workersSupported],
+    ["File API", diagnostics.fileApiSupported],
+    ["Local storage", diagnostics.storageAvailable],
+    ["Cross-origin isolated", diagnostics.crossOriginIsolated],
+    ["CPU threads", diagnostics.hardwareConcurrency],
+    ["Device memory (GB)", diagnostics.deviceMemory]
+  ];
+
+  container.innerHTML = rows.map(([label, value]) => `
+    <div>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(formatDiagnosticValue(value))}</strong>
+    </div>
+  `).join("");
+
+  warningContainer.innerHTML = warnings.length
+    ? warnings.map((warning) => `
+      <p><i class="ti ti-alert-triangle"></i>${escapeHtml(warning)}</p>
+    `).join("")
+    : `<p class="diagnostics-ok"><i class="ti ti-circle-check"></i>Browser compatibility checks passed.</p>`;
+}
+
+async function copyDiagnostics() {
+  const diagnostics = collectDiagnostics();
+  const text = JSON.stringify(diagnostics, null, 2);
+
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("Diagnostics copied", "Environment details were copied to the clipboard.", "success");
+  } catch {
+    showToast("Copy failed", "Clipboard access is unavailable in this browser.", "error");
+  }
 }
 
 function bindDemoMenu() {
@@ -386,7 +445,11 @@ async function runCurrentQuery() {
     renderStatistics(result.columns, result.rows);
     updateQueryMetrics(result.rows.length, result.elapsedMs);
     setResultStatus("Query completed", "success");
-    setQueryStatus("Query completed successfully.");
+    setQueryStatus(
+      result.rows.length > 100000
+        ? "Query completed. Large result set loaded; consider aggregating for charts."
+        : "Query completed successfully."
+    );
     showToast(
       "Query completed",
       `${result.rows.length.toLocaleString()} rows in ${result.elapsedMs.toFixed(1)} ms.`,
