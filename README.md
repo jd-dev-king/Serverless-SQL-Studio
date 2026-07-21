@@ -89,6 +89,9 @@ echarts
 vite
 github-pages
 ```
+## Author
+
+Jeremiah Lupton
 
 ## License
 
