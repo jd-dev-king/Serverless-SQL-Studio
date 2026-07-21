@@ -1,6 +1,6 @@
 {
   "name": "serverless-sql-studio",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,6 +14,7 @@
     "@tabler/icons": "^3.34.1",
     "ag-grid-community": "^33.3.1",
     "apache-arrow": "^17.0.0",
+    "echarts": "^6.0.0",
     "monaco-editor": "^0.52.2"
   },
   "devDependencies": {
