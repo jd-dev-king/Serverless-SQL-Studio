@@ -59,6 +59,11 @@ export function Header() {
           <span>New Query</span>
         </button>
 
+        <button class="btn btn-ghost" id="helpBtn">
+          <i class="ti ti-help-circle"></i>
+          <span>Help</span>
+        </button>
+
         <button class="btn btn-ghost" id="resetWorkspaceBtn">
           <i class="ti ti-refresh"></i>
           <span>Reset</span>

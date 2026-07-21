@@ -1,27 +1,93 @@
 # Serverless SQL Studio
 
-Milestone **v0.6.0** adds production polish and portfolio-ready demo content.
+A privacy-first browser SQL IDE and data visualizer powered by **DuckDB-Wasm**, **Monaco Editor**, **AG Grid Community**, and **Apache ECharts**.
 
-## Included
+Users can import local CSV or Parquet files, query them with analytical SQL, explore schemas, profile result sets, create visualizations, save queries, and export results without a backend.
 
-- Three built-in demo datasets
-  - Sales Analytics
-  - Manufacturing KPIs
-  - Supply Chain
-- One-click demo loading
-- Dataset-specific starter SQL
-- Automatic query execution after demo load
-- Loading overlay
-- Success and error toast notifications
-- Improved accessibility states
-- Reduced-motion support
-- Refined demo menu and interaction feedback
-- Existing DuckDB, Monaco, AG Grid, ECharts, persistence, CSV, and Parquet functionality
+## Why this project matters
 
-## Install
+Serverless SQL Studio demonstrates:
+
+- Browser-based OLAP with WebAssembly
+- Static deployment without a database server
+- Client-side CSV and Parquet ingestion
+- Modern SQL editor integration
+- High-performance data-grid rendering
+- Interactive chart generation
+- Persistent local workspace state
+- Modular frontend architecture
+- GitHub Pages deployment
+
+## Current milestone
+
+**v0.7.0 — Documentation, onboarding, and final QA**
+
+This milestone adds:
+
+- First-run onboarding
+- Built-in help center
+- Keyboard shortcut reference
+- Escape and backdrop modal dismissal
+- Help button in the application toolbar
+- Resettable onboarding state
+- Improved project documentation
+- Accessibility and usability refinements
+
+## Features
+
+### Data engine
+- DuckDB-Wasm running entirely in the browser
+- CSV ingestion
+- Parquet ingestion
+- Multiple registered tables
+- Schema inspection
+- Row counts
+
+### SQL workspace
+- Monaco Editor
+- SQL syntax highlighting
+- Keyword and table autocomplete
+- Multiple query tabs
+- Saved queries
+- Query history
+- Cmd/Ctrl + Enter execution
+- Cmd/Ctrl + S saving
+
+### Results
+- AG Grid Community
+- Sorting
+- Filtering
+- Pagination
+- Resizable columns
+- Quick search
+- CSV export
+
+### Visualization
+- Bar charts
+- Line charts
+- Pie charts
+- Scatter charts
+- Interactive tooltips
+- Data zoom
+- PNG export
+
+### Statistics
+- Rows and columns
+- Null counts
+- Unique values
+- Min and max
+- Mean
+- Median
+- Standard deviation
+
+### Demo datasets
+- Sales Analytics
+- Manufacturing KPIs
+- Supply Chain
+
+## Local development
 
 ```bash
-rm -rf node_modules package-lock.json
 npm install
 npm run dev
 ```
@@ -32,18 +98,59 @@ Open:
 http://localhost:5173/Serverless-SQL-Studio/
 ```
 
-## Test checklist
+## Production build
 
-1. Load each built-in demo.
-2. Confirm each table appears in Explorer.
-3. Confirm starter SQL runs automatically.
-4. Verify charts and statistics for each demo.
-5. Confirm loading overlays appear during demo loading.
-6. Confirm success and error notifications appear.
-7. Confirm saved queries and history still persist.
-8. Import a local CSV or Parquet file.
-9. Test keyboard navigation and reduced-motion behavior.
-10. Run `npm run build`.
+```bash
+npm run build
+npm run preview
+```
+
+## GitHub Pages
+
+The included GitHub Actions workflow builds the Vite app and deploys `dist`.
+
+In GitHub:
+
+```text
+Settings → Pages → Source → GitHub Actions
+```
+
+Expected URL:
+
+```text
+https://jd-dev-king.github.io/Serverless-SQL-Studio/
+```
+
+## Project structure
+
+```text
+src/
+├── components/
+├── services/
+├── state/
+├── styles/
+├── utils/
+├── App.js
+└── main.js
+```
+
+## Final QA checklist
+
+- DuckDB initializes
+- All three demos load
+- CSV import works
+- Parquet import works
+- Monaco query execution works
+- Query tabs persist
+- Saved queries persist
+- AG Grid sorting and filtering work
+- Bar, line, pie, and scatter charts work
+- PNG export works
+- Statistics render correctly
+- Query history persists
+- Reset Workspace works
+- Production build succeeds
+- GitHub Pages base path is correct
 
 ## Roadmap
 
