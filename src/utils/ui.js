@@ -43,6 +43,7 @@ import {
   initializeChart,
   renderChart,
   clearChart,
+  resizeChart,
   exportChartPng
 } from "../services/chartService.js";
 import { profileResultSet } from "../services/statisticsService.js";
@@ -209,6 +210,8 @@ function bindControls() {
     appState.gridApi?.autoSizeAllColumns(false);
   });
 
+  document.querySelector("#expandResultsBtn")?.addEventListener("click", toggleResultsFullscreen);
+
   document.querySelector("#downloadResultsBtn")?.addEventListener("click", exportGridCsv);
 
   document.querySelector("#renderChartBtn")?.addEventListener("click", () => {
@@ -275,6 +278,13 @@ function bindHelpAndOnboarding() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
+      const expandedPanel = document.querySelector(".results-panel.results-fullscreen");
+
+      if (expandedPanel) {
+        toggleResultsFullscreen();
+        return;
+      }
+
       document.querySelectorAll(".modal-backdrop").forEach((modal) => {
         modal.hidden = true;
       });
@@ -378,6 +388,39 @@ async function copyDiagnostics() {
   } catch {
     showToast("Copy failed", "Clipboard access is unavailable in this browser.", "error");
   }
+}
+
+
+function toggleResultsFullscreen() {
+  const panel = document.querySelector(".results-panel");
+  const button = document.querySelector("#expandResultsBtn");
+  if (!panel || !button) return;
+
+  const isExpanded = panel.classList.toggle("results-fullscreen");
+  document.body.classList.toggle("results-fullscreen-active", isExpanded);
+
+  button.setAttribute("aria-pressed", String(isExpanded));
+  button.setAttribute(
+    "aria-label",
+    isExpanded ? "Restore results section" : "Expand results section"
+  );
+  button.setAttribute(
+    "title",
+    isExpanded ? "Restore results section" : "Expand results section"
+  );
+
+  const icon = button.querySelector("i");
+  if (icon) {
+    icon.className = isExpanded ? "ti ti-minimize" : "ti ti-maximize";
+  }
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      appState.gridApi?.sizeColumnsToFit();
+      resizeChart();
+      window.dispatchEvent(new Event("resize"));
+    });
+  });
 }
 
 function bindDemoMenu() {

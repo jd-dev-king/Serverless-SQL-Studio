@@ -35,8 +35,12 @@ export function ResultsPanel() {
             <input id="gridSearchInput" type="search" placeholder="Filter result rows" />
           </div>
 
-          <button class="icon-btn" id="autosizeColumnsBtn" aria-label="Auto-size columns">
-            <i class="ti ti-arrows-maximize"></i>
+          <button class="icon-btn" id="autosizeColumnsBtn" aria-label="Auto-size result columns" title="Auto-size result columns">
+            <i class="ti ti-columns-3"></i>
+          </button>
+
+          <button class="icon-btn" id="expandResultsBtn" aria-label="Expand results section" title="Expand results section" aria-pressed="false">
+            <i class="ti ti-maximize"></i>
           </button>
 
           <button class="icon-btn" id="downloadResultsBtn" aria-label="Download results" disabled>

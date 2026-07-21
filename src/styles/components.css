@@ -1718,3 +1718,54 @@ kbd {
     flex: 1;
   }
 }
+
+
+.results-panel.results-fullscreen {
+  position: fixed;
+  inset: 12px;
+  z-index: 130;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  border-radius: 16px;
+  display: grid;
+  grid-template-rows: 44px 42px minmax(0, 1fr);
+  box-shadow: 0 32px 110px rgba(0, 0, 0, .72);
+}
+
+.results-panel.results-fullscreen .result-view {
+  min-height: 0;
+  height: 100%;
+}
+
+.results-panel.results-fullscreen .results-grid,
+.results-panel.results-fullscreen .chart-workspace,
+.results-panel.results-fullscreen .chart-canvas {
+  min-height: 0;
+  height: 100%;
+}
+
+.results-panel.results-fullscreen .chart-workspace {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.results-fullscreen-active {
+  overflow: hidden;
+}
+
+.results-fullscreen-active::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 125;
+  background: rgba(3, 8, 15, .78);
+  backdrop-filter: blur(7px);
+}
+
+@media (max-width: 720px) {
+  .results-panel.results-fullscreen {
+    inset: 4px;
+    border-radius: 10px;
+  }
+}

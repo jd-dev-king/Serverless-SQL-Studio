@@ -219,6 +219,10 @@ export function renderChart({
   });
 }
 
+export function resizeChart() {
+  chart?.resize();
+}
+
 export function clearChart() {
   chart?.clear();
 }

@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.0.2 — 2026-07-21
+
+### Fixed
+
+- Replaced the misleading expand icon that only auto-sized AG Grid columns.
+- Added a real fullscreen toggle for the complete Results section.
+- Added full-screen chart viewing for all visualization tabs.
+- Forced AG Grid and ECharts to resize after expanding or restoring.
+- Added Escape-key support for leaving fullscreen mode.
+- Added separate controls for column auto-sizing and panel expansion.
+
+
 ## v1.0.1 — 2026-07-21
 
 ### Fixed
