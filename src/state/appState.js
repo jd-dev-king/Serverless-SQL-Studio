@@ -1,3 +1,11 @@
+export const DEFAULT_QUERY = `SELECT
+  category,
+  SUM(revenue) AS total_revenue,
+  SUM(units) AS total_units
+FROM sample_sales
+GROUP BY category
+ORDER BY total_revenue DESC;`;
+
 export const appState = {
   tables: new Map(),
   activeTable: null,
@@ -7,20 +15,19 @@ export const appState = {
   initialized: false,
   editor: null,
   gridApi: null,
-  queries: [
-    {
-      id: crypto.randomUUID(),
-      name: "Query 1",
-      sql: `SELECT
-  category,
-  SUM(revenue) AS total_revenue,
-  SUM(units) AS total_units
-FROM sample_sales
-GROUP BY category
-ORDER BY total_revenue DESC;`
-    }
-  ],
-  activeQueryId: null
+  queries: [],
+  activeQueryId: null,
+  preferences: {
+    chartType: "bar",
+    pageSize: 100
+  }
 };
 
-appState.activeQueryId = appState.queries[0].id;
+export function createDefaultQuery(name = "Query 1") {
+  return {
+    id: crypto.randomUUID(),
+    name,
+    sql: DEFAULT_QUERY,
+    savedAt: null
+  };
+}

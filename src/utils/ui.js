@@ -1,4 +1,4 @@
-import { appState } from "../state/appState.js";
+import { appState, createDefaultQuery } from "../state/appState.js";
 import {
   initializeDuckDB,
   registerSampleCsv,
@@ -22,16 +22,43 @@ import {
   setQuickFilter,
   exportGridCsv
 } from "../services/gridService.js";
+import {
+  initializeChart,
+  renderChart,
+  clearChart,
+  exportChartPng
+} from "../services/chartService.js";
+import { profileResultSet } from "../services/statisticsService.js";
+import {
+  loadWorkspace,
+  saveWorkspace,
+  loadQueryHistory,
+  saveQueryHistory,
+  loadPreferences,
+  savePreferences,
+  clearSavedWorkspace
+} from "../services/storageService.js";
 
-const queryHistory = [];
+const restoredWorkspace = loadWorkspace([createDefaultQuery()]);
+appState.queries = restoredWorkspace.queries;
+appState.activeQueryId = restoredWorkspace.activeQueryId;
+appState.preferences = loadPreferences();
+
+const queryHistory = loadQueryHistory().map((item) => ({
+  ...item,
+  time: new Date(item.time)
+}));
 
 export async function initializeApp() {
   bindTabs();
   bindSidebar();
   bindControls();
   renderQueryTabs();
+  renderSavedQueries();
+  renderHistory();
 
   appState.gridApi = createResultsGrid(document.querySelector("#resultsGrid"));
+  initializeChart(document.querySelector("#chartCanvas"));
 
   const activeQuery = getActiveQuery();
   appState.editor = await createSqlEditor(
@@ -89,6 +116,12 @@ function bindTabs() {
 
       tab.classList.add("active");
       document.querySelector(`#${tab.dataset.panel}Panel`)?.classList.add("active");
+
+      if (tab.dataset.panel === "charts") {
+        requestAnimationFrame(() => {
+          tryRenderChart(false);
+        });
+      }
     });
   });
 }
@@ -133,6 +166,7 @@ function bindControls() {
   document.querySelector("#formatQueryBtn")?.addEventListener("click", formatSql);
   document.querySelector("#saveQueryBtn")?.addEventListener("click", saveActiveQuery);
   document.querySelector("#newQueryBtn")?.addEventListener("click", createNewQuery);
+  document.querySelector("#resetWorkspaceBtn")?.addEventListener("click", resetWorkspace);
   window.addEventListener("save-query", saveActiveQuery);
 
   document.querySelector("#gridSearchInput")?.addEventListener("input", (event) => {
@@ -144,6 +178,28 @@ function bindControls() {
   });
 
   document.querySelector("#downloadResultsBtn")?.addEventListener("click", exportGridCsv);
+
+  document.querySelector("#renderChartBtn")?.addEventListener("click", () => {
+    tryRenderChart(true);
+  });
+
+  document.querySelector("#exportChartBtn")?.addEventListener("click", exportChartPng);
+
+  const chartTypeSelect = document.querySelector("#chartTypeSelect");
+  if (chartTypeSelect) {
+    chartTypeSelect.value = appState.preferences.chartType || "bar";
+    chartTypeSelect.addEventListener("change", () => {
+      appState.preferences.chartType = chartTypeSelect.value;
+      savePreferences(appState.preferences);
+      if (appState.resultRows.length) tryRenderChart(false);
+    });
+  }
+
+  ["#chartXColumn", "#chartYColumn"].forEach((selector) => {
+    document.querySelector(selector)?.addEventListener("change", () => {
+      if (appState.resultRows.length) tryRenderChart(false);
+    });
+  });
 }
 
 async function handleFiles(fileList) {
@@ -195,6 +251,8 @@ async function runCurrentQuery() {
     appState.resultRows = result.rows;
 
     setGridData(result.columns, result.rows);
+    updateChartControls(result.columns, result.rows);
+    renderStatistics(result.columns, result.rows);
     updateQueryMetrics(result.rows.length, result.elapsedMs);
     setResultStatus("Query completed", "success");
     setQueryStatus("Query completed successfully.");
@@ -207,12 +265,16 @@ async function runCurrentQuery() {
       elapsedMs: result.elapsedMs,
       time: new Date()
     });
+    saveQueryHistory(queryHistory);
     renderHistory();
   } catch (error) {
     console.error(error);
     setResultStatus("Query failed", "error");
     setQueryStatus(error.message);
     clearGrid();
+    clearChart();
+    renderStatistics([], []);
+    updateChartControls([], []);
   } finally {
     appState.queryRunning = false;
     enableQueryButtons(true);
@@ -268,13 +330,16 @@ function createNewQuery() {
 
   appState.queries.push(query);
   appState.activeQueryId = query.id;
+  persistWorkspace();
   renderQueryTabs();
+  renderSavedQueries();
   setEditorValue(query.sql);
 }
 
 function switchQuery(queryId) {
   updateActiveQueryFromEditor();
   appState.activeQueryId = queryId;
+  persistWorkspace();
   renderQueryTabs();
   setEditorValue(getActiveQuery().sql);
 }
@@ -292,21 +357,96 @@ function closeQuery(queryId) {
     setEditorValue(next.sql);
   }
 
+  persistWorkspace();
   renderQueryTabs();
+  renderSavedQueries();
 }
 
 function saveActiveQuery() {
   updateActiveQueryFromEditor();
-  setQueryStatus(`${getActiveQuery().name} saved for this session.`);
+  const query = getActiveQuery();
+  query.savedAt = new Date().toISOString();
+
+  const enteredName = window.prompt("Saved query name:", query.name);
+  if (enteredName?.trim()) {
+    query.name = enteredName.trim();
+  }
+
+  persistWorkspace();
+  renderQueryTabs();
+  renderSavedQueries();
+  setQueryStatus(`${query.name} saved in this browser.`);
 }
 
 function updateActiveQueryFromEditor() {
   const query = getActiveQuery();
-  if (query) query.sql = getEditorValue();
+  if (query) {
+    query.sql = getEditorValue();
+    persistWorkspace();
+  }
 }
 
 function getActiveQuery() {
   return appState.queries.find((query) => query.id === appState.activeQueryId);
+}
+
+
+function renderSavedQueries() {
+  const list = document.querySelector("#savedQueryList");
+  const savedQueries = appState.queries.filter((query) => query.savedAt);
+
+  document.querySelector("#savedQueryCount").textContent = savedQueries.length;
+
+  list.innerHTML = savedQueries.length
+    ? savedQueries.map((query) => `
+      <button class="saved-query-item" data-saved-query="${query.id}">
+        <i class="ti ti-bookmark-filled"></i>
+        <span>
+          <strong>${escapeHtml(query.name)}</strong>
+          <small>${new Date(query.savedAt).toLocaleString()}</small>
+        </span>
+      </button>
+    `).join("")
+    : `<div class="sidebar-empty">No saved queries.</div>`;
+
+  list.querySelectorAll("[data-saved-query]").forEach((button) => {
+    button.addEventListener("click", () => {
+      switchQuery(button.dataset.savedQuery);
+    });
+  });
+}
+
+function persistWorkspace() {
+  saveWorkspace(appState.queries, appState.activeQueryId);
+}
+
+function resetWorkspace() {
+  const confirmed = window.confirm(
+    "Reset saved queries, history, and preferences for this browser?"
+  );
+
+  if (!confirmed) return;
+
+  clearSavedWorkspace();
+
+  appState.queries = [createDefaultQuery()];
+  appState.activeQueryId = appState.queries[0].id;
+  appState.preferences = {
+    chartType: "bar",
+    pageSize: 100
+  };
+
+  queryHistory.splice(0, queryHistory.length);
+
+  renderQueryTabs();
+  renderSavedQueries();
+  renderHistory();
+  setEditorValue(appState.queries[0].sql);
+
+  const chartTypeSelect = document.querySelector("#chartTypeSelect");
+  if (chartTypeSelect) chartTypeSelect.value = "bar";
+
+  setQueryStatus("Workspace reset.");
 }
 
 function renderTables(filter = "") {
@@ -376,6 +516,17 @@ function renderHistory() {
   const historyList = document.querySelector("#historyList");
   document.querySelector("#historyCount").textContent = queryHistory.length;
 
+  if (!queryHistory.length) {
+    historyList.innerHTML = `
+      <div class="empty-panel">
+        <span class="empty-icon"><i class="ti ti-history"></i></span>
+        <h3>No query history</h3>
+        <p>Completed queries will appear here during this session.</p>
+      </div>
+    `;
+    return;
+  }
+
   historyList.innerHTML = queryHistory.map((item, index) => `
     <button class="history-item" data-history="${index}">
       <span class="history-icon"><i class="ti ti-check"></i></span>
@@ -393,6 +544,159 @@ function renderHistory() {
       updateActiveQueryFromEditor();
     });
   });
+}
+
+
+function updateChartControls(columns, rows) {
+  const xSelect = document.querySelector("#chartXColumn");
+  const ySelect = document.querySelector("#chartYColumn");
+  const renderButton = document.querySelector("#renderChartBtn");
+  const exportButton = document.querySelector("#exportChartBtn");
+
+  const options = columns
+    .map((column) => `<option value="${escapeHtml(column)}">${escapeHtml(column)}</option>`)
+    .join("");
+
+  xSelect.innerHTML = options;
+  ySelect.innerHTML = options;
+
+  if (!columns.length || !rows.length) {
+    renderButton.disabled = true;
+    exportButton.disabled = true;
+    return;
+  }
+
+  const numericColumn = columns.find((column) =>
+    rows.some((row) => Number.isFinite(Number(row[column])))
+  );
+
+  const categoryColumn =
+    columns.find((column) => column !== numericColumn) ?? columns[0];
+
+  xSelect.value = categoryColumn;
+  ySelect.value = numericColumn ?? columns[Math.min(1, columns.length - 1)];
+
+  renderButton.disabled = !numericColumn;
+  exportButton.disabled = !numericColumn;
+
+  if (numericColumn) {
+    tryRenderChart(false);
+  }
+}
+
+function tryRenderChart(showErrors = true) {
+  if (!appState.resultRows.length) return;
+
+  const type = document.querySelector("#chartTypeSelect")?.value;
+  const xColumn = document.querySelector("#chartXColumn")?.value;
+  const yColumn = document.querySelector("#chartYColumn")?.value;
+  const title =
+    document.querySelector("#chartTitleInput")?.value.trim() ||
+    "Query visualization";
+
+  try {
+    document.querySelector("#chartEmptyState")?.remove();
+
+    renderChart({
+      type,
+      rows: appState.resultRows,
+      xColumn,
+      yColumn,
+      title
+    });
+
+    document.querySelector("#exportChartBtn").disabled = false;
+  } catch (error) {
+    if (!showErrors) return;
+
+    console.error(error);
+    setQueryStatus(`Chart error: ${error.message}`);
+  }
+}
+
+function renderStatistics(columns, rows) {
+  const container = document.querySelector("#statisticsContent");
+
+  if (!columns.length || !rows.length) {
+    container.innerHTML = `
+      <div class="empty-panel">
+        <span class="empty-icon"><i class="ti ti-chart-histogram"></i></span>
+        <h3>No statistics yet</h3>
+        <p>Run a query to profile its returned columns.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const profile = profileResultSet(columns, rows);
+
+  container.innerHTML = `
+    <div class="statistics-summary">
+      <article class="metric-card">
+        <span>Rows</span>
+        <strong>${profile.summary.rows.toLocaleString()}</strong>
+        <small>Returned records</small>
+      </article>
+      <article class="metric-card">
+        <span>Columns</span>
+        <strong>${profile.summary.columns}</strong>
+        <small>Result fields</small>
+      </article>
+      <article class="metric-card">
+        <span>Null values</span>
+        <strong>${profile.summary.nulls.toLocaleString()}</strong>
+        <small>Across result set</small>
+      </article>
+      <article class="metric-card">
+        <span>Numeric fields</span>
+        <strong>${profile.summary.numericColumns}</strong>
+        <small>Profiled measures</small>
+      </article>
+    </div>
+
+    <div class="profile-table-wrap">
+      <table class="profile-table">
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Nulls</th>
+            <th>Unique</th>
+            <th>Min</th>
+            <th>Max</th>
+            <th>Mean</th>
+            <th>Median</th>
+            <th>Std. dev.</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${profile.columns.map((column) => `
+            <tr>
+              <td><strong>${escapeHtml(column.name)}</strong></td>
+              <td><span class="type-pill">${escapeHtml(column.type)}</span></td>
+              <td>${column.nulls.toLocaleString()}</td>
+              <td>${column.unique.toLocaleString()}</td>
+              <td>${formatStatistic(column.min)}</td>
+              <td>${formatStatistic(column.max)}</td>
+              <td>${formatStatistic(column.mean)}</td>
+              <td>${formatStatistic(column.median)}</td>
+              <td>${formatStatistic(column.standardDeviation)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function formatStatistic(value) {
+  if (value == null) return "—";
+  if (typeof value === "number") {
+    return escapeHtml(
+      value.toLocaleString(undefined, { maximumFractionDigits: 3 })
+    );
+  }
+  return escapeHtml(String(value));
 }
 
 function setEngineStatus(message, state = "ready") {

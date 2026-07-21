@@ -5,6 +5,12 @@ export function ResultsPanel() {
         <button class="result-tab active" data-panel="results">
           <i class="ti ti-table"></i>Results
         </button>
+        <button class="result-tab" data-panel="charts">
+          <i class="ti ti-chart-bar"></i>Charts
+        </button>
+        <button class="result-tab" data-panel="statistics">
+          <i class="ti ti-chart-histogram"></i>Statistics
+        </button>
         <button class="result-tab" data-panel="schema">
           <i class="ti ti-list-details"></i>Schema
         </button>
@@ -41,6 +47,65 @@ export function ResultsPanel() {
 
       <div class="result-view active" id="resultsPanel">
         <div id="resultsGrid" class="ag-theme-serverless results-grid"></div>
+      </div>
+
+      <div class="result-view" id="chartsPanel">
+        <div class="chart-workspace">
+          <div class="chart-controls">
+            <label>
+              Chart type
+              <select id="chartTypeSelect">
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+                <option value="pie">Pie</option>
+                <option value="scatter">Scatter</option>
+              </select>
+            </label>
+
+            <label>
+              X / Category
+              <select id="chartXColumn"></select>
+            </label>
+
+            <label>
+              Y / Value
+              <select id="chartYColumn"></select>
+            </label>
+
+            <label class="chart-title-field">
+              Chart title
+              <input id="chartTitleInput" value="Query visualization" />
+            </label>
+
+            <button class="btn btn-secondary" id="renderChartBtn" disabled>
+              <i class="ti ti-chart-bar"></i>
+              Render
+            </button>
+
+            <button class="btn btn-icon-text" id="exportChartBtn" disabled>
+              <i class="ti ti-photo-down"></i>
+              PNG
+            </button>
+          </div>
+
+          <div id="chartCanvas" class="chart-canvas">
+            <div class="empty-panel" id="chartEmptyState">
+              <span class="empty-icon"><i class="ti ti-chart-bar"></i></span>
+              <h3>No visualization yet</h3>
+              <p>Run a query, choose X and Y columns, and render a chart.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-view" id="statisticsPanel">
+        <div id="statisticsContent" class="statistics-content">
+          <div class="empty-panel">
+            <span class="empty-icon"><i class="ti ti-chart-histogram"></i></span>
+            <h3>No statistics yet</h3>
+            <p>Run a query to profile its returned columns.</p>
+          </div>
+        </div>
       </div>
 
       <div class="result-view" id="schemaPanel">

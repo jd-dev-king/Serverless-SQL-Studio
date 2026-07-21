@@ -31,10 +31,14 @@ export function Sidebar() {
           <span class="count-badge">0</span>
         </button>
 
-        <button class="nav-section">
-          <span><i class="ti ti-star"></i>Favorites</span>
-          <span class="count-badge">0</span>
+        <button class="nav-section active-secondary">
+          <span><i class="ti ti-bookmark"></i>Saved Queries</span>
+          <span class="count-badge" id="savedQueryCount">0</span>
         </button>
+
+        <div class="saved-query-list" id="savedQueryList">
+          <div class="sidebar-empty">No saved queries.</div>
+        </div>
 
         <button class="nav-section">
           <span><i class="ti ti-history"></i>Recent Queries</span>

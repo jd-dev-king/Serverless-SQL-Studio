@@ -1,24 +1,19 @@
 # Serverless SQL Studio
 
-Milestone **v0.3.0** upgrades the SQL workspace and results experience.
+Milestone **v0.5.0** adds browser persistence and saved workspace features.
 
 ## Included
 
-- Monaco SQL editor
-- SQL syntax highlighting
-- SQL keyword and table autocomplete
-- Cmd/Ctrl + Enter query execution
-- Cmd/Ctrl + S session save shortcut
-- Multiple query tabs
-- Query creation, switching, and closing
-- AG Grid Community results table
-- Sorting and filtering
-- Resizable columns
-- Pagination
-- Quick result filtering
-- CSV export
-- Automatic column sizing
-- Existing DuckDB-Wasm CSV/Parquet functionality
+- Saved SQL queries
+- Query naming
+- Restored query tabs after refresh
+- Restored active query
+- Persistent recent query history
+- Persistent chart preference
+- Saved Query explorer
+- Reset workspace control
+- Up to 50 stored history records
+- Existing DuckDB, Monaco, AG Grid, ECharts, CSV, and Parquet functionality
 
 ## Install
 
@@ -36,16 +31,16 @@ http://localhost:5173/Serverless-SQL-Studio/
 
 ## Test checklist
 
-1. Wait for DuckDB Ready.
-2. Run the default query.
-3. Sort and filter grid columns.
-4. Use the result search box.
-5. Resize columns.
-6. Export query results.
-7. Create a new query tab.
-8. Switch between query tabs.
-9. Use Cmd/Ctrl + Enter.
-10. Import a CSV or Parquet file.
+1. Create several query tabs.
+2. Edit SQL in each tab.
+3. Save and name a query.
+4. Refresh the browser.
+5. Confirm tabs and SQL are restored.
+6. Run several queries.
+7. Refresh and confirm History is restored.
+8. Change the chart type and refresh.
+9. Confirm the saved query appears in the sidebar.
+10. Test Reset Workspace.
 
 ## Roadmap
 
@@ -54,4 +49,5 @@ http://localhost:5173/Serverless-SQL-Studio/
 - v0.3.0 — Monaco SQL editor and AG Grid
 - v0.4.0 — Visualization studio and statistics
 - v0.5.0 — Saved queries and persistence
+- v0.6.0 — Production polish and demo datasets
 - v1.0.0 — Public portfolio release

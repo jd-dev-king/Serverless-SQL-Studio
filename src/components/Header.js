@@ -32,6 +32,11 @@ export function Header() {
           <span>New Query</span>
         </button>
 
+        <button class="btn btn-ghost" id="resetWorkspaceBtn">
+          <i class="ti ti-refresh"></i>
+          <span>Reset</span>
+        </button>
+
         <button class="btn btn-primary" id="runQueryBtn" disabled>
           <i class="ti ti-player-play-filled"></i>
           <span>Run Query</span>
