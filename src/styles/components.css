@@ -1571,3 +1571,150 @@ kbd {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+.help-copy {
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.tour-progress-wrap {
+  margin-bottom: 20px;
+}
+
+.tour-progress-label {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tour-progress-label span {
+  color: var(--text-muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.tour-progress-label strong {
+  font-size: 10px;
+}
+
+.tour-progress-track {
+  height: 5px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #1b273a;
+}
+
+.tour-progress-track span {
+  display: block;
+  width: 33.333%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3b82f6, #7c3aed);
+  transition: width .24s ease;
+}
+
+.tour-slide {
+  display: none;
+}
+
+.tour-slide.active {
+  display: block;
+  animation: tour-slide-in .22s ease;
+}
+
+.tour-feature-grid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tour-feature-grid-four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.tour-feature-grid article {
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 38, .72);
+}
+
+.tour-feature-grid i {
+  display: block;
+  margin-bottom: 9px;
+  color: #75a9f7;
+  font-size: 22px;
+}
+
+.tour-feature-grid strong,
+.tour-feature-grid small {
+  display: block;
+}
+
+.tour-feature-grid strong {
+  font-size: 10px;
+}
+
+.tour-feature-grid small {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.tour-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dont-show-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.dont-show-label input {
+  accent-color: var(--primary);
+}
+
+@keyframes tour-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+@media (max-width: 760px) {
+  .tour-feature-grid,
+  .tour-feature-grid-four {
+    grid-template-columns: 1fr;
+  }
+
+  .tour-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .onboarding-actions {
+    justify-content: stretch;
+    flex-wrap: wrap;
+  }
+
+  .onboarding-actions .btn {
+    flex: 1;
+  }
+}

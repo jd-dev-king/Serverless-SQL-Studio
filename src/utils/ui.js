@@ -16,7 +16,9 @@ import {
 import {
   shouldShowOnboarding,
   completeOnboarding,
-  resetOnboarding
+  dismissOnboarding,
+  resetOnboarding,
+  restartOnboarding
 } from "../services/onboardingService.js";
 import {
   collectDiagnostics,
@@ -97,7 +99,7 @@ export async function initializeApp() {
     await runCurrentQuery();
 
     if (shouldShowOnboarding()) {
-      openModal("#onboardingModal");
+      startTour();
     }
   } catch (error) {
     console.error(error);
@@ -225,14 +227,29 @@ function bindControls() {
 
 function bindHelpAndOnboarding() {
   document.querySelector("#closeHelpBtn")?.addEventListener("click", () => closeModal("#helpModal"));
-  document.querySelector("#closeAboutBtn")?.addEventListener("click", () => closeModal("#aboutModal"));
-  document.querySelector("#copyDiagnosticsBtn")?.addEventListener("click", copyDiagnostics);
+  document.querySelector("#restartTourBtn")?.addEventListener("click", () => {
+    closeModal("#helpModal");
+    restartOnboarding();
+    startTour();
+  });
+
   document.querySelector("#skipOnboardingBtn")?.addEventListener("click", () => {
-    completeOnboarding();
+    const dontShowAgain = document.querySelector("#dontShowOnboardingCheckbox")?.checked ?? true;
+    dismissOnboarding({ dontShowAgain });
     closeModal("#onboardingModal");
   });
-  document.querySelector("#startOnboardingBtn")?.addEventListener("click", async () => {
-    completeOnboarding();
+
+  document.querySelector("#previousTourBtn")?.addEventListener("click", () => {
+    setTourStep(currentTourStep - 1);
+  });
+
+  document.querySelector("#nextTourBtn")?.addEventListener("click", () => {
+    setTourStep(currentTourStep + 1);
+  });
+
+  document.querySelector("#finishTourBtn")?.addEventListener("click", async () => {
+    const dontShowAgain = document.querySelector("#dontShowOnboardingCheckbox")?.checked ?? true;
+    completeOnboarding({ dontShowAgain });
     closeModal("#onboardingModal");
     await loadDemoDataset("sales");
   });
@@ -252,6 +269,42 @@ function bindHelpAndOnboarding() {
       });
     }
   });
+}
+
+let currentTourStep = 0;
+const tourStepNames = ["Welcome", "Load Data", "Analyze"];
+
+function startTour() {
+  currentTourStep = 0;
+  const checkbox = document.querySelector("#dontShowOnboardingCheckbox");
+  if (checkbox) checkbox.checked = true;
+  setTourStep(0);
+  openModal("#onboardingModal");
+}
+
+function setTourStep(step) {
+  currentTourStep = Math.max(0, Math.min(2, step));
+
+  document.querySelectorAll("[data-tour-step]").forEach((slide) => {
+    slide.classList.toggle(
+      "active",
+      Number(slide.dataset.tourStep) === currentTourStep
+    );
+  });
+
+  const label = document.querySelector("#tourStepLabel");
+  const name = document.querySelector("#tourStepName");
+  const progress = document.querySelector("#tourProgressBar");
+  const backButton = document.querySelector("#previousTourBtn");
+  const nextButton = document.querySelector("#nextTourBtn");
+  const finishButton = document.querySelector("#finishTourBtn");
+
+  if (label) label.textContent = `Step ${currentTourStep + 1} of 3`;
+  if (name) name.textContent = tourStepNames[currentTourStep];
+  if (progress) progress.style.width = `${((currentTourStep + 1) / 3) * 100}%`;
+  if (backButton) backButton.disabled = currentTourStep === 0;
+  if (nextButton) nextButton.hidden = currentTourStep === 2;
+  if (finishButton) finishButton.hidden = currentTourStep !== 2;
 }
 
 function openModal(selector) {
@@ -379,7 +432,7 @@ async function loadDemoDataset(id) {
     await runCurrentQuery();
 
     if (shouldShowOnboarding()) {
-      openModal("#onboardingModal");
+      startTour();
     }
   } catch (error) {
     console.error(error);

@@ -4,28 +4,32 @@ A privacy-first browser SQL IDE and data visualizer powered by DuckDB-Wasm, Mona
 
 ## Current milestone
 
-**v0.8.0 — Release Candidate and Deployment Diagnostics**
+**v0.9.0 — Guided Product Tour and Pre-Release Polish**
 
 This milestone adds:
 
-- About panel
-- Browser compatibility checks
-- Deployment diagnostics
-- Copyable environment details
-- File-size safeguards
-- Large-result guidance
-- GitHub Pages base-path verification
-- Release-candidate labeling
-- Existing onboarding, demos, saved queries, charts, statistics, CSV, and Parquet support
+- Three-step onboarding tour
+- Step progress indicator
+- Welcome, Load Data, and Analyze stages
+- Back and Next navigation
+- “Don't show again” preference
+- Skip Tour behavior
+- Start Exploring action
+- Take the Tour Again option in Help
+- Reset Workspace restores first-run onboarding
+- Existing release diagnostics, demos, persistence, visualizations, statistics, and imports
 
-## Recommended browser limits
+## Tour behavior
 
-- CSV: up to 500 MB
-- Parquet: up to 1 GB
+- First visit: onboarding appears automatically.
+- Start Exploring: marks onboarding complete and loads the Sales demo.
+- Skip Tour: closes the tour.
+- Don't show again checked: the tour remains hidden on future visits.
+- Don't show again unchecked: the tour may appear again.
+- Help → Take the Tour Again: restarts the tour at Step 1.
+- Reset Workspace: clears onboarding state.
 
-Actual limits depend on browser memory, device capacity, query complexity, and result size.
-
-## Final release checks
+## Final pre-release checklist
 
 ```bash
 npm install
@@ -35,19 +39,19 @@ npm run preview
 
 Verify:
 
-- DuckDB reaches Ready
+- Tour opens on first visit
+- Progress advances 1/3 → 2/3 → 3/3
+- Back and Next work
+- Skip Tour works
+- Don't show again persists
+- Help can restart the tour
+- Start Exploring loads Sales demo
+- DuckDB initializes
 - CSV and Parquet import
-- All demo datasets
-- Monaco query tabs
-- AG Grid sorting/filtering/export
-- Bar, line, pie, and scatter charts
-- PNG export
-- Statistics
+- Monaco, AG Grid, charts, statistics
 - Saved queries and history
-- Onboarding and Help
 - About diagnostics
-- GitHub Pages base path
-- Mobile layout
+- GitHub Pages preview
 
 ## Roadmap
 
@@ -59,4 +63,5 @@ Verify:
 - v0.6.0 — Production polish and demo datasets
 - v0.7.0 — Documentation, onboarding, and final QA
 - v0.8.0 — Release candidate and diagnostics
+- v0.9.0 — Guided product tour and pre-release polish
 - v1.0.0 — Public portfolio release
