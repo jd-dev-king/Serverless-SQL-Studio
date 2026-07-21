@@ -182,7 +182,18 @@ function bindControls() {
     updateActiveQueryFromEditor();
   });
 
-  document.querySelector("#formatQueryBtn")?.addEventListener("click", formatSql);
+  document.querySelector("#formatQueryBtn")?.addEventListener("click", async () => {
+    const formatted = await formatSql();
+
+    if (formatted) {
+      updateActiveQueryFromEditor();
+      setQueryStatus("SQL formatted.");
+      showToast("SQL formatted", "The active query was formatted successfully.", "success", 2200);
+    } else {
+      setQueryStatus("SQL formatting failed.");
+      showToast("Formatting failed", "The query could not be formatted.", "error");
+    }
+  });
   document.querySelector("#saveQueryBtn")?.addEventListener("click", saveActiveQuery);
   document.querySelector("#newQueryBtn")?.addEventListener("click", createNewQuery);
   document.querySelector("#resetWorkspaceBtn")?.addEventListener("click", resetWorkspace);

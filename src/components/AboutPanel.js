@@ -18,7 +18,7 @@ export function AboutPanel() {
             <div>
               <h3>Serverless SQL Studio</h3>
               <p>Privacy-first browser analytics powered by DuckDB-Wasm.</p>
-              <span class="version-pill">v0.8.0 release candidate</span>
+              <span class="version-pill">v1.0.0 public release</span>
             </div>
           </div>
 

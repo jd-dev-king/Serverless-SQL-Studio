@@ -1,6 +1,6 @@
 {
   "name": "serverless-sql-studio",
-  "version": "0.9.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,9 +15,23 @@
     "ag-grid-community": "^33.3.1",
     "apache-arrow": "^17.0.0",
     "echarts": "^6.0.0",
-    "monaco-editor": "^0.52.2"
+    "monaco-editor": "^0.52.2",
+    "sql-formatter": "^15.8.2"
   },
   "devDependencies": {
     "vite": "^7.0.6"
-  }
+  },
+  "description": "A privacy-first browser SQL IDE and data visualizer powered by DuckDB-Wasm, Monaco Editor, AG Grid, and Apache ECharts.",
+  "keywords": [
+    "duckdb-wasm",
+    "sql-editor",
+    "csv",
+    "parquet",
+    "echarts",
+    "monaco-editor",
+    "ag-grid",
+    "github-pages",
+    "data-visualization"
+  ],
+  "license": "MIT"
 }

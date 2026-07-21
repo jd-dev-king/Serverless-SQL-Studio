@@ -1,6 +1,7 @@
 import loader from "@monaco-editor/loader";
 import * as monaco from "monaco-editor";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import { format as formatSqlText } from "sql-formatter";
 
 self.MonacoEnvironment = {
   getWorker() {
@@ -39,6 +40,8 @@ export async function createSqlEditor(container, initialValue, onRun) {
       "editorWidget.background": "#111C2E"
     }
   });
+
+  registerSqlFormatter();
 
   editorInstance = monaco.editor.create(container, {
     value: initialValue,
@@ -88,8 +91,45 @@ export function focusEditor() {
   editorInstance?.focus();
 }
 
-export function formatSql() {
-  editorInstance?.getAction("editor.action.formatDocument")?.run();
+export async function formatSql() {
+  if (!editorInstance) return false;
+
+  try {
+    await editorInstance.getAction("editor.action.formatDocument")?.run();
+    editorInstance.focus();
+    return true;
+  } catch (error) {
+    console.error("SQL formatting failed:", error);
+    return false;
+  }
+}
+
+function registerSqlFormatter() {
+  monaco.languages.registerDocumentFormattingEditProvider("sql", {
+    provideDocumentFormattingEdits(model) {
+      const originalSql = model.getValue();
+
+      try {
+        const formattedSql = formatSqlText(originalSql, {
+          language: "sql",
+          keywordCase: "upper",
+          tabWidth: 2,
+          useTabs: false,
+          linesBetweenQueries: 2
+        });
+
+        return [
+          {
+            range: model.getFullModelRange(),
+            text: formattedSql
+          }
+        ];
+      } catch (error) {
+        console.error("SQL formatter provider failed:", error);
+        return [];
+      }
+    }
+  });
 }
 
 export function registerTableCompletions(tableProvider) {
